@@ -4,115 +4,233 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Odometer App</title>
-
 <!-- Google Fonts (as in mock) -->
 <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Russo+One&family=Suez+One&family=Carter+One&display=swap" rel="stylesheet">
-
 <style>
-  :root{
-    --bg:#ffffff;          /* background color */
-    --fg:#000000;          /* font color */
-    --box:#000000;         /* box/button color */
-    --box-fg:#ffffff;      /* button text */
-  }
+:root{
+  --bg:#ffffff; /* background color */
+  --fg:#000000; /* font color */
+  --box:#000000; /* box/button color */
+  --box-fg:#ffffff; /* button text */
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family: Arial, sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
-  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-  html,body{ height:100%; }
-  body{
-    margin:0; background:var(--bg); color:var(--fg);
-    font-family: Arial, sans-serif;
-    display:flex; flex-direction:column; align-items:center;
-  }
+/* Fake status bar */
+.status-bar{
+  width:100%;
+  padding:6px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#000;
+  color:#fff;
+  font-size:12px;
+}
 
-  /* Fake status bar */
-  .status-bar{
-    width:100%; padding:6px 12px; display:flex; justify-content:space-between; align-items:center;
-    background:#000; color:#fff; font-size:12px;
-  }
+/* Containers for screens */
+.screen{
+  width:100%;
+  max-width:480px;
+  height:calc(100dvh - 0px);
+  padding-bottom:64px;
+  position:relative;
+  box-sizing:border-box;
+}
+.hidden{ display:none; }
 
-  /* Containers for screens */
-  .screen{ width:100%; max-width:480px; height:calc(100dvh - 0px); padding-bottom:64px; position:relative; }
-  .hidden{ display:none; }
+/* Header */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px;
+  font-weight:700;
+  font-size:18px;
+}
+.icon-btn{
+  border:none;
+  background:var(--box);
+  color:var(--box-fg);
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:18px;
+  cursor:pointer;
+}
 
-  /* Header */
-  .header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 16px; font-weight:700; font-size:18px;
-  }
-  .icon-btn{
-    border:none; background:var(--box); color:var(--box-fg);
-    border-radius:12px; padding:8px 12px; font-size:18px; cursor:pointer;
-  }
+/* Main ODO */
+.pill{
+  background:var(--box);
+  color:var(--box-fg);
+  border-radius:12px;
+  padding:14px 18px;
+  font-weight:700;
+  display:inline-block;
+  text-align:center;
+}
+#changeOdoBtn{
+  font-size:22px;
+  width:86%;
+  display:block;
+  margin:10px auto 0;
+}
+#odoValue{
+  text-align:center;
+  font-size:84px;
+  font-weight:700;
+  letter-spacing:1px;
+  margin:18px 0 10px 0;
+  line-height:1;
+}
 
-  /* Main ODO */
-  .pill{
-    background:var(--box); color:var(--box-fg);
-    border-radius:12px; padding:14px 18px; font-weight:700; display:inline-block;
-  }
-  #changeOdoBtn{ font-size:22px; width:86%; display:block; margin:10px auto 0; }
+/* align row centered */
+.row{
+  display:flex;
+  gap:18px;
+  justify-content:center;
+  align-items:center;
+}
+.big-btn{
+  min-width:140px;
+  padding:16px 18px;
+  font-size:26px;
+  border:none;
+  cursor:pointer;
+  border-radius:12px;
+  background:var(--box);
+  color:var(--box-fg);
+  transition:transform .06s ease-in-out;
+}
+.big-btn:active{ transform:scale(0.98); }
+.speed-wrap{
+  width:86%;
+  margin:18px auto 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.speed-label{
+  font-size:18px;
+}
+#resetBtn{ padding:10px 14px; font-size:18px; border-radius:12px; }
 
-  #odoValue{
-    text-align:center; font-size:84px; font-weight:700; letter-spacing:1px;
-    margin:18px 0 10px 0; line-height:1;
-  }
+/* GPS time larger as requested */
+.gps-time{ text-align:center; margin-top:8px; }
+.gps-time .time{ font-size:56px; font-weight:700; }
+.gps-time .sub{ font-size:10px; opacity:.7; margin-top:2px; }
 
-  .row{ display:flex; gap:18px; justify-content:center; align-items:center; }
-  .big-btn{
-    min-width:140px; padding:16px 18px; font-size:26px; border:none; cursor:pointer;
-    border-radius:12px; background:var(--box); color:var(--box-fg);
-    transition:transform .06s ease-in-out;
-  }
-  .big-btn:active{ transform:scale(0.98); }
+/* Bottom bar */
+.bottom-bar{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#f2f2f2;
+  padding:10px 16px;
+  display:flex;
+  justify-content:space-between;
+  font-size:16px;
+}
 
-  .speed-wrap{ width:86%; margin:18px auto 0; display:flex; align-items:center; justify-content:space-between; }
-  .speed-label{ font-size:18px; }
-  #resetBtn{ padding:10px 14px; font-size:18px; border-radius:12px; }
+/* Settings Screen */
+.settings{ padding:6px 16px 120px; }
+.back-row{ display:flex; align-items:center; gap:10px; }
+.title{ font-size:24px; font-weight:800; margin:6px 0 12px; text-align:left; flex:1; }
+.reset-wide{ width:100%; margin:8px 0 16px; font-size:20px; padding:12px; border-radius:16px; background:var(--box); color:var(--box-fg); border:none; cursor:pointer; }
+.section-title{ text-align:center; font-size:18px; font-weight:800; margin:16px 0 8px; }
+.font-grid, .swatch-grid{ display:grid; gap:14px; align-items:center; justify-content:center; }
+.font-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+.font-opt{ border:2px solid #ddd; border-radius:12px; padding:10px 12px; text-align:center; cursor:pointer; user-select:none; }
+.font-opt.active{ outline:3px solid var(--box); }
+.swatch-grid{ grid-template-columns:repeat(4,48px); }
+.swatch{ width:46px; height:36px; border-radius:8px; border:2px solid #cfcfcf; position:relative; cursor:pointer; }
+.swatch .tick{ position:absolute; right:4px; bottom:2px; font-size:16px; display:none; background:#fffaa8; border-radius:6px; padding:0 2px; }
+.swatch.active .tick{ display:block; }
 
-  .gps-time{
-    text-align:center; margin-top:8px;
-  }
-  /* <-- GPS time font doubled from 28px to 56px --> */
-  .gps-time .time{ font-size:56px; font-weight:700; }
-  .gps-time .sub{ font-size:10px; opacity:.7; margin-top:2px; }
+/* Modal numeric keypad */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal{
+  width:92%;
+  max-width:420px;
+  background:var(--bg);
+  color:var(--fg);
+  border-radius:14px;
+  padding:18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+}
+.odo-input{
+  font-family: 'Russo One', sans-serif;
+  font-size:48px;
+  text-align:center;
+  margin-bottom:12px;
+  letter-spacing:2px;
+  background:transparent;
+}
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+.keypad button{
+  padding:16px;
+  font-size:20px;
+  border-radius:10px;
+  border:none;
+  background:#efefef;
+  cursor:pointer;
+}
+.modal-actions{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:12px;
+}
+.modal-actions .left, .modal-actions .right{
+  flex:1;
+}
+.cancel-btn{ background:#f44336; color:#fff; width:100%; padding:12px; border-radius:10px; border:none; }
+.ok-btn{ background:#4caf50; color:#fff; width:100%; padding:12px; border-radius:10px; border:none; }
 
-  /* Bottom bar */
-  .bottom-bar{
-    position:fixed; left:0; right:0; bottom:0; background:#f2f2f2;
-    padding:10px 16px; display:flex; justify-content:space-between; font-size:16px;
-  }
+/* Utility */
+.muted{ opacity:.7; font-size:12px; text-align:center; }
 
-  /* Settings Screen */
-  .settings{
-    padding:6px 16px 90px;
-  }
-  .back-row{ display:flex; align-items:center; gap:10px; }
-  .title{ font-size:24px; font-weight:800; margin:6px 0 12px; }
-  .reset-wide{ width:100%; margin:8px 0 16px; font-size:20px; padding:12px; border-radius:16px; }
+/* Landscape layout adjustments */
+@media (orientation: landscape) {
+  body { align-items:stretch; }
+  .screen { max-width:100%; height:100dvh; padding-bottom:0; display:flex; flex-direction:row; gap:12px; align-items:center; justify-content:center; }
+  #odoValue { font-size:64px; }
+  .header { padding:8px 12px; }
+  .gps-time .time { font-size:44px; }
+  .modal { max-width:520px; }
+}
 
-  .section-title{ text-align:center; font-size:18px; font-weight:800; margin:16px 0 8px; }
-  .font-grid, .swatch-grid{ display:grid; gap:14px; align-items:center; justify-content:center; }
-  .font-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .font-opt{
-    border:2px solid #ddd; border-radius:12px; padding:10px 12px; text-align:center; cursor:pointer; user-select:none;
-  }
-  .font-opt.active{ outline:3px solid var(--box); }
-
-  .swatch-grid{ grid-template-columns:repeat(4,48px); }
-  .swatch{
-    width:46px; height:36px; border-radius:8px; border:2px solid #cfcfcf; position:relative; cursor:pointer;
-  }
-  .swatch .tick{
-    position:absolute; right:4px; bottom:2px; font-size:16px; display:none;
-    background:#fffaa8; border-radius:6px; padding:0 2px;
-  }
-  .swatch.active .tick{ display:block; }
-
-  /* Utility */
-  .muted{ opacity:.7; font-size:12px; text-align:center; }
+/* small devices tweak */
+@media (max-width:360px) {
+  #odoValue { font-size:56px; }
+  .big-btn { min-width:120px; font-size:20px; padding:12px; }
+}
 </style>
 </head>
 <body>
-
 <!-- STATUS BAR -->
 <div class="status-bar">
   <div id="sb-time">12:00</div>
@@ -123,13 +241,12 @@
 <!-- ===== ODO SCREEN ===== -->
 <section id="screen-odo" class="screen">
   <div class="header">
-    <div>ODO METER</div>
+    <div style="flex:1; text-align:left;">ODO METER</div>
     <button id="openSettings" class="icon-btn" aria-label="Settings">⚙️</button>
   </div>
 
   <button id="changeOdoBtn" class="pill">CHANGE ODO</button>
-
-  <div id="odoValue">100.00</div>
+  <div id="odoValue">000.00</div>
 
   <div class="row" style="margin-top:8px;">
     <button id="btnDec" class="big-btn">-0.01</button>
@@ -146,7 +263,6 @@
     <div id="gpsTime" class="time">00:00:00</div>
     <div class="sub">(GPS TIME 24 hours format)</div>
   </div>
-
   <div class="muted" style="margin-top:8px;">
     <span id="satellite">00/00</span>
   </div>
@@ -166,7 +282,7 @@
       <div class="title">Settings</div>
     </div>
 
-    <button id="resetWide" class="icon-btn reset-wide">RESET</button>
+    <button id="resetWide" class="reset-wide">RESET</button>
 
     <div class="section-title">Font Style</div>
     <div class="font-grid" id="fontGrid">
@@ -199,16 +315,44 @@
       <div class="swatch" data-color="#F44336" style="background:#F44336;"><span class="tick">✔</span></div>
       <div class="swatch" data-color="#FFFFFF" style="background:#FFFFFF;"><span class="tick">✔</span></div>
     </div>
+
+    <div style="height:12px;"></div>
+    <button id="saveBtn" class="reset-wide" style="background:#1976d2;">SAVE SETTINGS</button>
   </div>
 </section>
 
+<!-- Numeric keypad modal (hidden) -->
+<div id="odoModalBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="odoModalLabel">
+    <div id="odoInput" class="odo-input">000.00</div>
+    <div class="keypad" id="keypad">
+      <button data-key="1">1</button>
+      <button data-key="2">2</button>
+      <button data-key="3">3</button>
+      <button data-key="4">4</button>
+      <button data-key="5">5</button>
+      <button data-key="6">6</button>
+      <button data-key="7">7</button>
+      <button data-key="8">8</button>
+      <button data-key="9">9</button>
+      <button data-key=".">.</button>
+      <button data-key="0">0</button>
+      <button data-key="⌫">⌫</button>
+    </div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <div class="left"><button id="odoCancel" class="cancel-btn">CANCEL</button></div>
+      <div class="right"><button id="odoOk" class="ok-btn">OK</button></div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ---------- State ---------- */
-let odo = 100.00;                     // km
-let lastFix = null;                   // {lat, lon, t}
+let odo = 0.00; // stored in km, displayed as ###.##
+let lastFix = null; // {lat, lon, t}
 let watchId = null;
 let longPressTimer = null;
-let boxTextColor = getComputedStyle(document.documentElement).getPropertyValue('--box-fg').trim() || '#ffffff';
+let currentFont = 'Arial';
 
 /* ---------- Elements ---------- */
 const elOdo = document.getElementById('odoValue');
@@ -218,75 +362,191 @@ const elSBTime = document.getElementById('sb-time');
 const elSBBatt = document.getElementById('sb-batt');
 const elBottomLeft = document.getElementById('btm-left');
 const elBottomRight = document.getElementById('btm-right');
+const odoModalBackdrop = document.getElementById('odoModalBackdrop');
+const odoInputEl = document.getElementById('odoInput');
 
-function showOdo(){
-  elOdo.textContent = odo.toFixed(2);
+/* ---------- Utility ---------- */
+function showOdo(){ 
+  // display with 3 integer digits and 2 decimals -> pad with leading zeros
+  const n = Math.max(0, odo);
+  const parts = n.toFixed(2).split('.');
+  let intPart = parts[0];
+  let decPart = parts[1];
+  if(intPart.length < 3) intPart = intPart.padStart(3,'0');
+  elOdo.textContent = `${intPart}.${decPart}`;
+}
+function vibrate(ms=40){ if('vibrate' in navigator){ navigator.vibrate(ms); } }
+function toRad(d){ return d * Math.PI/180; }
+function haversine(lat1,lon1,lat2,lon2){
+  const R = 6371e3; // meters
+  const φ1 = toRad(lat1), φ2 = toRad(lat2);
+  const Δφ = toRad(lat2-lat1); const Δλ = toRad(lon2-lon1);
+  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); // meters
+  return d;
 }
 
-/* ---------- ODO manual controls ---------- */
-document.getElementById('btnInc').addEventListener('click', () => { odo += 0.01; showOdo(); vibrate(); });
-document.getElementById('btnDec').addEventListener('click', () => { odo = Math.max(0, odo - 0.01); showOdo(); vibrate(); });
+/* ---------- Restore preferences (including last saved odo) ---------- */
+(function restore(){
+  const saved = JSON.parse(localStorage.getItem('odo_prefs')||'{}');
+  if(saved.bg) document.documentElement.style.setProperty('--bg', saved.bg);
+  if(saved.fg) document.documentElement.style.setProperty('--fg', saved.fg);
+  if(saved.box) document.documentElement.style.setProperty('--box', saved.box);
+  if(saved.boxfg) document.documentElement.style.setProperty('--box-fg', saved.boxfg);
+  if(saved.font){
+    currentFont = saved.font;
+    document.body.style.fontFamily = currentFont + ', sans-serif';
+    // mark font active
+    const fg = document.querySelectorAll('#fontGrid .font-opt');
+    fg.forEach(x => x.classList.toggle('active', x.dataset.font === saved.font));
+  }
+  if(saved.odo !== undefined){
+    odo = parseFloat(saved.odo);
+  } else {
+    // default 0.00 as requested
+    odo = 0.00;
+  }
+})();
 
-document.getElementById('changeOdoBtn').addEventListener('click', () => {
-  const val = prompt('Enter new ODO value (km):', odo.toFixed(2));
-  const n = parseFloat(val);
-  if (!isNaN(n) && n >= 0){ odo = n; showOdo(); }
+/* ---------- Initial paint ---------- */
+showOdo();
+
+/* ---------- ODO manual controls ---------- */
+document.getElementById('btnInc').addEventListener('click', () => { odo += 0.01; odo = parseFloat(odo.toFixed(2)); showOdo(); vibrate(); });
+document.getElementById('btnDec').addEventListener('click', () => { odo = Math.max(0, +(odo - 0.01).toFixed(2)); showOdo(); vibrate(); });
+
+/* ---------- CHANGE ODO: open numeric keypad modal ---------- */
+// We'll manage value as integer of hundredths for easy editing
+let modalHundredths = Math.round(odo * 100); // integer
+function formatHundredths(h){ // returns "000.00" style
+  const sign = h < 0 ? '-' : '';
+  const abs = Math.abs(h);
+  const intPart = Math.floor(abs / 100).toString().padStart(3,'0');
+  const decPart = (abs % 100).toString().padStart(2,'0');
+  return `${sign}${intPart}.${decPart}`;
+}
+function openOdoModal(){
+  modalHundredths = Math.round(odo * 100);
+  odoInputEl.textContent = formatHundredths(modalHundredths);
+  odoModalBackdrop.classList.remove('hidden');
+  odoModalBackdrop.setAttribute('aria-hidden','false');
+}
+function closeOdoModal(){
+  odoModalBackdrop.classList.add('hidden');
+  odoModalBackdrop.setAttribute('aria-hidden','true');
+}
+document.getElementById('changeOdoBtn').addEventListener('click', openOdoModal);
+
+/* keypad handling */
+document.getElementById('keypad').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button');
+  if(!btn) return;
+  const k = btn.dataset.key;
+  if(!k) return;
+  if(k === '⌫'){
+    // backspace: remove last digit from an internal decimal string representation
+    // Represent modalHundredths as string of up to 5 digits (###XX) -> we will treat numeric input as an integer string with minimum 3 digits?
+    // Simpler approach: convert to string without dot, as at least 5 digits if necessary
+    let s = Math.abs(modalHundredths).toString().padStart(3,'0'); // int part and dec? easier to do via formatted display
+    // Build current with no dot
+    const formatted = formatHundredths(modalHundredths); // "000.00"
+    const raw = formatted.replace('.',''); // "00000"
+    // remove last character
+    let newRaw = raw.slice(0, -1);
+    if(newRaw.length === 0) newRaw = '00000';
+    // interpret newRaw as number of hundredths
+    modalHundredths = parseInt(newRaw, 10);
+  } else if(k === '.'){
+    // ignore '.' since we force format and editing via digits only
+    // no-op
+  } else {
+    // digit pressed
+    const digit = k;
+    if(!/[0-9]/.test(digit)) return;
+    // We'll manipulate raw string of 5 digits (3 integer + 2 decimals)
+    const formatted = formatHundredths(modalHundredths); // "000.00"
+    let raw = formatted.replace('.',''); // 5 chars
+    // shift left and append digit -> keep length 5 (drop leftmost)
+    raw = raw.slice(1) + digit;
+    modalHundredths = parseInt(raw, 10);
+  }
+  // cap to a reasonable max, e.g., 99999 hundredths -> 999.99 km (but original design allowed more; adjust if needed)
+  if(modalHundredths > 99999) modalHundredths = 99999;
+  odoInputEl.textContent = formatHundredths(modalHundredths);
+});
+
+/* OK / Cancel */
+document.getElementById('odoOk').addEventListener('click', () => {
+  odo = modalHundredths / 100;
+  odo = parseFloat(odo.toFixed(2));
+  showOdo();
+  vibrate(60);
+  closeOdoModal();
+});
+document.getElementById('odoCancel').addEventListener('click', () => { closeOdoModal(); });
+
+/* allow escape to close modal and keyboard numeric input while modal open */
+document.addEventListener('keydown', (e) => {
+  if(!odoModalBackdrop.classList.contains('hidden')){
+    if(e.key === 'Escape') { closeOdoModal(); return; }
+    // allow numeric keys
+    if(/^[0-9]$/.test(e.key)){
+      // simulate pressing the keypad button with data-key
+      const btn = document.querySelector(`#keypad button[data-key="${e.key}"]`);
+      if(btn) btn.click();
+      e.preventDefault();
+      return;
+    }
+    if(e.key === 'Backspace') {
+      const btn = document.querySelector(`#keypad button[data-key="⌫"]`);
+      if(btn) btn.click();
+      e.preventDefault();
+      return;
+    }
+  }
 });
 
 /* ---------- Reset (long-press 3s) ---------- */
 function attachLongPress(btn, onDone){
+  let lpTimer = null;
   btn.addEventListener('mousedown', start);
   btn.addEventListener('touchstart', start, {passive:true});
   btn.addEventListener('mouseup', cancel);
   btn.addEventListener('mouseleave', cancel);
   btn.addEventListener('touchend', cancel);
-
-  function start(){
+  btn.addEventListener('touchcancel', cancel);
+  function start(e){
     cancel();
-    longPressTimer = setTimeout(() => { onDone(); vibrate(80); }, 3000);
+    lpTimer = setTimeout(() => { onDone(); vibrate(120); lpTimer = null; }, 3000);
   }
-  function cancel(){ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; } }
+  function cancel(){
+    if(lpTimer){ clearTimeout(lpTimer); lpTimer = null; }
+  }
 }
-attachLongPress(document.getElementById('resetBtn'), () => { odo = 0; showOdo(); });
-attachLongPress(document.getElementById('resetWide'), () => { odo = 0; showOdo(); });
+attachLongPress(document.getElementById('resetBtn'), () => { odo = 0.00; showOdo(); });
+attachLongPress(document.getElementById('resetWide'), () => { odo = 0.00; showOdo(); });
 
 /* ---------- GPS tracking ---------- */
-function toRad(d){ return d * Math.PI/180; }
-function haversine(lat1,lon1,lat2,lon2){
-  const R = 6371e3; // meters
-  const φ1 = toRad(lat1), φ2 = toRad(lat2);
-  const Δφ = toRad(lat2-lat1);
-  const Δλ = toRad(lon2-lon1);
-  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
-  const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); // meters
-  return d;
-}
 function startGPS(){
   if(!('geolocation' in navigator)) return;
-
   watchId = navigator.geolocation.watchPosition(pos => {
-    const { latitude:lat, longitude:lon, speed, heading } = pos.coords;
+    const { latitude:lat, longitude:lon, speed } = pos.coords;
     const t = pos.timestamp;
-
-    // speed (m/s) -> km/h; may be null on some devices
     if(typeof speed === 'number' && !isNaN(speed)){
       elSpeed.textContent = (speed * 3.6).toFixed(1);
     }
-
     if(lastFix){
       const dist_m = haversine(lastFix.lat, lastFix.lon, lat, lon);
-      // filter tiny jitter under 2 meters
       if(dist_m > 2){
-        odo += (dist_m / 1000); // add in km
+        odo += (dist_m / 1000);
+        odo = parseFloat(odo.toFixed(2));
         showOdo();
       }
     }
     lastFix = { lat, lon, t };
   }, err => {
     console.warn('GPS error:', err.message);
-  }, {
-    enableHighAccuracy:true, maximumAge:1000, timeout:15000
-  });
+  }, { enableHighAccuracy:true, maximumAge:1000, timeout:15000 });
 }
 startGPS();
 
@@ -299,7 +559,8 @@ function tickClock(){
   elGpsTime.textContent = t;
   elSBTime.textContent = `${hh}:${mm}`;
 }
-setInterval(tickClock, 250); tickClock();
+setInterval(tickClock, 250);
+tickClock();
 
 /* ---------- Battery ---------- */
 if('getBattery' in navigator){
@@ -307,7 +568,7 @@ if('getBattery' in navigator){
     function draw(){
       const pct = Math.round(b.level*100);
       elSBBatt.textContent = pct + '%';
-      elBottomRight.textContent = String(pct); // number only (matches bottom-right "100")
+      elBottomRight.textContent = String(pct);
     }
     ['levelchange','chargingchange'].forEach(ev => b.addEventListener(ev, draw));
     draw();
@@ -328,18 +589,14 @@ document.getElementById('goBack').addEventListener('click', () => {
   document.getElementById('screen-odo').classList.remove('hidden');
 });
 
-/* ---------- Vibration ---------- */
-function vibrate(ms=40){ if('vibrate' in navigator){ navigator.vibrate(ms); } }
-
 /* ---------- Settings: fonts & colors ---------- */
 const fontGrid = document.getElementById('fontGrid');
-let currentFont = 'Arial';
 fontGrid.querySelectorAll('.font-opt').forEach(el=>{
   el.addEventListener('click', ()=>{
     fontGrid.querySelectorAll('.font-opt').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     currentFont = el.dataset.font;
-    document.body.style.fontFamily = `'${currentFont}', sans-serif`;
+    document.body.style.fontFamily = currentFont + ', sans-serif';
   });
 });
 
@@ -365,34 +622,85 @@ initSwatchGrid('bgGrid','--bg');
 initSwatchGrid('fgGrid','--fg');
 initSwatchGrid('boxGrid','--box');
 
-/* ---------- Persist UI selections (optional localStorage) ---------- */
-(function restore(){
-  const saved = JSON.parse(localStorage.getItem('odo_prefs')||'{}');
-  if(saved.bg) document.documentElement.style.setProperty('--bg', saved.bg);
-  if(saved.fg) document.documentElement.style.setProperty('--fg', saved.fg);
-  if(saved.box){ document.documentElement.style.setProperty('--box', saved.box); }
-  if(saved.boxfg){ document.documentElement.style.setProperty('--box-fg', saved.boxfg); }
-  if(saved.font){ document.body.style.fontFamily = `'${saved.font}', sans-serif`; currentFont = saved.font; }
-})();
-window.addEventListener('beforeunload', ()=>{
+/* mark active swatches based on current styles */
+(function markActives(){
   const styles = getComputedStyle(document.documentElement);
-  localStorage.setItem('odo_prefs', JSON.stringify({
+  const bg = styles.getPropertyValue('--bg').trim();
+  const fg = styles.getPropertyValue('--fg').trim();
+  const box = styles.getPropertyValue('--box').trim();
+  document.querySelectorAll('#bgGrid .swatch').forEach(s => s.classList.toggle('active', s.dataset.color.toLowerCase() === bg.toLowerCase()));
+  document.querySelectorAll('#fgGrid .swatch').forEach(s => s.classList.toggle('active', s.dataset.color.toLowerCase() === fg.toLowerCase()));
+  document.querySelectorAll('#boxGrid .swatch').forEach(s => s.classList.toggle('active', s.dataset.color.toLowerCase() === box.toLowerCase()));
+})();
+
+/* ---------- Settings: Save button ---------- */
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const styles = getComputedStyle(document.documentElement);
+  const prefs = {
     bg: styles.getPropertyValue('--bg').trim(),
     fg: styles.getPropertyValue('--fg').trim(),
     box: styles.getPropertyValue('--box').trim(),
     boxfg: styles.getPropertyValue('--box-fg').trim(),
-    font: currentFont
-  }));
+    font: currentFont,
+    odo: odo.toFixed(2)
+  };
+  localStorage.setItem('odo_prefs', JSON.stringify(prefs));
+  // give feedback
+  alert('Settings saved');
 });
 
-/* ---------- Accessibility: keyboard shortcuts ---------- */
+/* ---------- Persist on beforeunload as fallback (still keep explicit save) ---------- */
+window.addEventListener('beforeunload', ()=>{
+  // we intentionally do NOT overwrite saved prefs unless user clicked SAVE.
+  // But saving current odo can be useful as fallback; comment this out if you don't want auto-save.
+  const styles = getComputedStyle(document.documentElement);
+  const fallback = {
+    bg: styles.getPropertyValue('--bg').trim(),
+    fg: styles.getPropertyValue('--fg').trim(),
+    box: styles.getPropertyValue('--box').trim(),
+    boxfg: styles.getPropertyValue('--box-fg').trim(),
+    font: currentFont,
+    // DO NOT auto-save odo here to honor "only saved on Save" requirement? The user wanted persistence across tab removal.
+    // We'll NOT auto-save odo on unload to ensure RESET behavior only after explicit save. If you want auto-restore, uncomment next line.
+    // odo: odo.toFixed(2)
+  };
+  // store fallback (non-odo) so prefs persist but odo only when saved intentionally
+  localStorage.setItem('odo_prefs', JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('odo_prefs')||'{}'), fallback)));
+});
+
+/* ---------- Accessibility: keyboard shortcuts & Volume buttons ---------- */
 document.addEventListener('keydown', e=>{
-  if(e.key==='ArrowUp'){ odo+=0.01; showOdo(); }
-  else if(e.key==='ArrowDown'){ odo=Math.max(0, odo-0.01); showOdo(); }
+  // Arrow keys for small adjustments (still works even when modal closed)
+  if(!odoModalBackdrop.classList.contains('hidden')) return; // while modal open, ignore global shortcuts
+  if(e.key==='ArrowUp'){ odo = +(odo + 0.01).toFixed(2); showOdo(); vibrate(); e.preventDefault(); }
+  else if(e.key==='ArrowDown'){ odo = Math.max(0, +(odo - 0.01).toFixed(2)); showOdo(); vibrate(); e.preventDefault(); }
+
+  // Volume / Media key support: try several variants
+  const volUpKeys = ['VolumeUp','AudioVolumeUp','MediaTrackPrevious']; // include variants if needed
+  const volDownKeys = ['VolumeDown','AudioVolumeDown','MediaTrackNext'];
+  // also consider e.code
+  if(volUpKeys.includes(e.key) || volUpKeys.includes(e.code)){
+    odo = +(odo + 0.01).toFixed(2);
+    showOdo();
+    vibrate();
+    e.preventDefault();
+  } else if(volDownKeys.includes(e.key) || volDownKeys.includes(e.code)){
+    odo = Math.max(0, +(odo - 0.01).toFixed(2));
+    showOdo();
+    vibrate();
+    e.preventDefault();
+  }
 });
 
-/* ---------- Initial paint ---------- */
+/* ---------- Initial focus / paint ---------- */
 showOdo();
+
+/* ---------- Additional UX: close modal by tapping backdrop ---------- */
+odoModalBackdrop.addEventListener('click', (ev) => {
+  if(ev.target === odoModalBackdrop){
+    closeOdoModal();
+  }
+});
 </script>
 </body>
 </html>
