@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Odometer App</title>
+
+<!-- Google Fonts (as in mock) -->
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Russo+One&family=Suez+One&family=Carter+One&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#ffffff;          /* background color */
+    --fg:#000000;          /* font color */
+    --box:#000000;         /* box/button color */
+    --box-fg:#ffffff;      /* button text */
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family: Arial, sans-serif;
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  /* Fake status bar */
+  .status-bar{
+    width:100%; padding:6px 12px; display:flex; justify-content:space-between; align-items:center;
+    background:#000; color:#fff; font-size:12px;
+  }
+
+  /* Containers for screens */
+  .screen{ width:100%; max-width:480px; height:calc(100dvh - 0px); padding-bottom:64px; position:relative; }
+  .hidden{ display:none; }
+
+  /* Header */
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px; font-weight:700; font-size:18px;
+  }
+  .icon-btn{
+    border:none; background:var(--box); color:var(--box-fg);
+    border-radius:12px; padding:8px 12px; font-size:18px; cursor:pointer;
+  }
+
+  /* Main ODO */
+  .pill{
+    background:var(--box); color:var(--box-fg);
+    border-radius:12px; padding:14px 18px; font-weight:700; display:inline-block;
+  }
+  #changeOdoBtn{ font-size:22px; width:86%; display:block; margin:10px auto 0; }
+
+  #odoValue{
+    text-align:center; font-size:84px; font-weight:700; letter-spacing:1px;
+    margin:18px 0 10px 0; line-height:1;
+  }
+
+  .row{ display:flex; gap:18px; justify-content:center; align-items:center; }
+  .big-btn{
+    min-width:140px; padding:16px 18px; font-size:26px; border:none; cursor:pointer;
+    border-radius:12px; background:var(--box); color:var(--box-fg);
+    transition:transform .06s ease-in-out;
+  }
+  .big-btn:active{ transform:scale(0.98); }
+
+  .speed-wrap{ width:86%; margin:18px auto 0; display:flex; align-items:center; justify-content:space-between; }
+  .speed-label{ font-size:18px; }
+  #resetBtn{ padding:10px 14px; font-size:18px; border-radius:12px; }
+
+  .gps-time{
+    text-align:center; margin-top:8px;
+  }
+  .gps-time .time{ font-size:28px; font-weight:700; }
+  .gps-time .sub{ font-size:10px; opacity:.7; margin-top:2px; }
+
+  /* Bottom bar */
+  .bottom-bar{
+    position:fixed; left:0; right:0; bottom:0; background:#f2f2f2;
+    padding:10px 16px; display:flex; justify-content:space-between; font-size:16px;
+  }
+
+  /* Settings Screen */
+  .settings{
+    padding:6px 16px 90px;
+  }
+  .back-row{ display:flex; align-items:center; gap:10px; }
+  .title{ font-size:24px; font-weight:800; margin:6px 0 12px; }
+  .reset-wide{ width:100%; margin:8px 0 16px; font-size:20px; padding:12px; border-radius:16px; }
+
+  .section-title{ text-align:center; font-size:18px; font-weight:800; margin:16px 0 8px; }
+  .font-grid, .swatch-grid{ display:grid; gap:14px; align-items:center; justify-content:center; }
+  .font-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .font-opt{
+    border:2px solid #ddd; border-radius:12px; padding:10px 12px; text-align:center; cursor:pointer; user-select:none;
+  }
+  .font-opt.active{ outline:3px solid var(--box); }
+
+  .swatch-grid{ grid-template-columns:repeat(4,48px); }
+  .swatch{
+    width:46px; height:36px; border-radius:8px; border:2px solid #cfcfcf; position:relative; cursor:pointer;
+  }
+  .swatch .tick{
+    position:absolute; right:4px; bottom:2px; font-size:16px; display:none;
+    background:#fffaa8; border-radius:6px; padding:0 2px;
+  }
+  .swatch.active .tick{ display:block; }
+
+  /* Utility */
+  .muted{ opacity:.7; font-size:12px; text-align:center; }
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div id="sb-time">12:00</div>
+  <div>📶 📡 📱</div>
+  <div id="sb-batt">100%</div>
+</div>
+
+<!-- ===== ODO SCREEN ===== -->
+<section id="screen-odo" class="screen">
+  <div class="header">
+    <div>ODO METER</div>
+    <button id="openSettings" class="icon-btn" aria-label="Settings">⚙️</button>
+  </div>
+
+  <button id="changeOdoBtn" class="pill">CHANGE ODO</button>
+
+  <div id="odoValue">100.00</div>
+
+  <div class="row" style="margin-top:8px;">
+    <button id="btnDec" class="big-btn">-0.01</button>
+    <button id="btnInc" class="big-btn">+0.01</button>
+  </div>
+
+  <div class="speed-wrap">
+    <div class="speed-label">Speed (km/h): <strong id="speedVal">0.0</strong></div>
+    <!-- Long-press only -->
+    <button id="resetBtn" class="icon-btn">RESET</button>
+  </div>
+
+  <div class="gps-time">
+    <div id="gpsTime" class="time">00:00:00</div>
+    <div class="sub">(GPS TIME 24 hours format)</div>
+  </div>
+
+  <div class="muted" style="margin-top:8px;">
+    <span id="satellite">00/00</span>
+  </div>
+</section>
+
+<!-- Bottom bar (persists) -->
+<div class="bottom-bar">
+  <div id="btm-left">00/00</div>
+  <div id="btm-right">100</div><!-- battery number only -->
+</div>
+
+<!-- ===== SETTINGS SCREEN ===== -->
+<section id="screen-settings" class="screen hidden">
+  <div class="settings">
+    <div class="back-row">
+      <button id="goBack" class="icon-btn" aria-label="Back">←</button>
+      <div class="title">Settings</div>
+    </div>
+
+    <button id="resetWide" class="icon-btn reset-wide">RESET</button>
+
+    <div class="section-title">Font Style</div>
+    <div class="font-grid" id="fontGrid">
+      <div class="font-opt" data-font="Righteous" style="font-family:'Righteous', cursive;">RIGHTEOUS</div>
+      <div class="font-opt" data-font="Russo One" style="font-family:'Russo One', sans-serif;">RUSSO ONE</div>
+      <div class="font-opt" data-font="Suez One" style="font-family:'Suez One', serif;">SUEZ ONE</div>
+      <div class="font-opt" data-font="Carter One" style="font-family:'Carter One', cursive;">CARTER ONE</div>
+    </div>
+
+    <div class="section-title">Background Colour</div>
+    <div class="swatch-grid" id="bgGrid">
+      <div class="swatch" data-color="#000000" style="background:#000000;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#FFEB3B" style="background:#FFEB3B;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#F44336" style="background:#F44336;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#FFFFFF" style="background:#FFFFFF;"><span class="tick">✔</span></div>
+    </div>
+
+    <div class="section-title">Font colour</div>
+    <div class="swatch-grid" id="fgGrid">
+      <div class="swatch" data-color="#000000" style="background:#000000;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#FFEB3B" style="background:#FFEB3B;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#F44336" style="background:#F44336;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#FFFFFF" style="background:#FFFFFF;"><span class="tick">✔</span></div>
+    </div>
+
+    <div class="section-title">Box Colour</div>
+    <div class="swatch-grid" id="boxGrid">
+      <div class="swatch" data-color="#000000" style="background:#000000;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#FFEB3B" style="background:#FFEB3B;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#F44336" style="background:#F44336;"><span class="tick">✔</span></div>
+      <div class="swatch" data-color="#FFFFFF" style="background:#FFFFFF;"><span class="tick">✔</span></div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ---------- State ---------- */
+let odo = 100.00;                     // km
+let lastFix = null;                   // {lat, lon, t}
+let watchId = null;
+let longPressTimer = null;
+let boxTextColor = getComputedStyle(document.documentElement).getPropertyValue('--box-fg').trim() || '#ffffff';
+
+/* ---------- Elements ---------- */
+const elOdo = document.getElementById('odoValue');
+const elSpeed = document.getElementById('speedVal');
+const elGpsTime = document.getElementById('gpsTime');
+const elSBTime = document.getElementById('sb-time');
+const elSBBatt = document.getElementById('sb-batt');
+const elBottomLeft = document.getElementById('btm-left');
+const elBottomRight = document.getElementById('btm-right');
+
+function showOdo(){
+  elOdo.textContent = odo.toFixed(2);
+}
+
+/* ---------- ODO manual controls ---------- */
+document.getElementById('btnInc').addEventListener('click', () => { odo += 0.01; showOdo(); vibrate(); });
+document.getElementById('btnDec').addEventListener('click', () => { odo = Math.max(0, odo - 0.01); showOdo(); vibrate(); });
+
+document.getElementById('changeOdoBtn').addEventListener('click', () => {
+  const val = prompt('Enter new ODO value (km):', odo.toFixed(2));
+  const n = parseFloat(val);
+  if (!isNaN(n) && n >= 0){ odo = n; showOdo(); }
+});
+
+/* ---------- Reset (long-press 3s) ---------- */
+function attachLongPress(btn, onDone){
+  btn.addEventListener('mousedown', start);
+  btn.addEventListener('touchstart', start, {passive:true});
+  btn.addEventListener('mouseup', cancel);
+  btn.addEventListener('mouseleave', cancel);
+  btn.addEventListener('touchend', cancel);
+
+  function start(){
+    cancel();
+    longPressTimer = setTimeout(() => { onDone(); vibrate(80); }, 3000);
+  }
+  function cancel(){ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; } }
+}
+attachLongPress(document.getElementById('resetBtn'), () => { odo = 0; showOdo(); });
+attachLongPress(document.getElementById('resetWide'), () => { odo = 0; showOdo(); });
+
+/* ---------- GPS tracking ---------- */
+function toRad(d){ return d * Math.PI/180; }
+function haversine(lat1,lon1,lat2,lon2){
+  const R = 6371e3; // meters
+  const φ1 = toRad(lat1), φ2 = toRad(lat2);
+  const Δφ = toRad(lat2-lat1);
+  const Δλ = toRad(lon2-lon1);
+  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); // meters
+  return d;
+}
+function startGPS(){
+  if(!('geolocation' in navigator)) return;
+
+  watchId = navigator.geolocation.watchPosition(pos => {
+    const { latitude:lat, longitude:lon, speed, heading } = pos.coords;
+    const t = pos.timestamp;
+
+    // speed (m/s) -> km/h; may be null on some devices
+    if(typeof speed === 'number' && !isNaN(speed)){
+      elSpeed.textContent = (speed * 3.6).toFixed(1);
+    }
+
+    if(lastFix){
+      const dist_m = haversine(lastFix.lat, lastFix.lon, lat, lon);
+      // filter tiny jitter under 2 meters
+      if(dist_m > 2){
+        odo += (dist_m / 1000); // add in km
+        showOdo();
+      }
+    }
+    lastFix = { lat, lon, t };
+  }, err => {
+    console.warn('GPS error:', err.message);
+  }, {
+    enableHighAccuracy:true, maximumAge:1000, timeout:15000
+  });
+}
+startGPS();
+
+/* ---------- Time (24h with seconds) ---------- */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tickClock(){
+  const d = new Date();
+  const hh = pad(d.getHours()), mm = pad(d.getMinutes()), ss = pad(d.getSeconds());
+  const t = `${hh}:${mm}:${ss}`;
+  elGpsTime.textContent = t;
+  elSBTime.textContent = `${hh}:${mm}`;
+}
+setInterval(tickClock, 250); tickClock();
+
+/* ---------- Battery ---------- */
+if('getBattery' in navigator){
+  navigator.getBattery().then(b => {
+    function draw(){
+      const pct = Math.round(b.level*100);
+      elSBBatt.textContent = pct + '%';
+      elBottomRight.textContent = String(pct); // number only (matches bottom-right "100")
+    }
+    ['levelchange','chargingchange'].forEach(ev => b.addEventListener(ev, draw));
+    draw();
+  }).catch(()=>{});
+}
+
+/* ---------- Satellite placeholders ---------- */
+elBottomLeft.textContent = '00/00';
+document.getElementById('satellite').textContent = '00/00';
+
+/* ---------- Navigation between screens ---------- */
+document.getElementById('openSettings').addEventListener('click', () => {
+  document.getElementById('screen-odo').classList.add('hidden');
+  document.getElementById('screen-settings').classList.remove('hidden');
+});
+document.getElementById('goBack').addEventListener('click', () => {
+  document.getElementById('screen-settings').classList.add('hidden');
+  document.getElementById('screen-odo').classList.remove('hidden');
+});
+
+/* ---------- Vibration ---------- */
+function vibrate(ms=40){ if('vibrate' in navigator){ navigator.vibrate(ms); } }
+
+/* ---------- Settings: fonts & colors ---------- */
+const fontGrid = document.getElementById('fontGrid');
+let currentFont = 'Arial';
+fontGrid.querySelectorAll('.font-opt').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    fontGrid.querySelectorAll('.font-opt').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    currentFont = el.dataset.font;
+    document.body.style.fontFamily = `'${currentFont}', sans-serif`;
+  });
+});
+
+function initSwatchGrid(gridId, cssVar){
+  const grid = document.getElementById(gridId);
+  grid.querySelectorAll('.swatch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      grid.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+      sw.classList.add('active');
+      document.documentElement.style.setProperty(cssVar, sw.dataset.color);
+      // auto adjust button text for contrast when box color changes
+      if(cssVar === '--box'){
+        const c = sw.dataset.color.replace('#','');
+        const r=parseInt(c.substr(0,2),16), g=parseInt(c.substr(2,2),16), b=parseInt(c.substr(4,2),16);
+        const luminance = (0.299*r + 0.587*g + 0.114*b)/255;
+        const text = luminance > 0.55 ? '#000000' : '#ffffff';
+        document.documentElement.style.setProperty('--box-fg', text);
+      }
+    });
+  });
+}
+initSwatchGrid('bgGrid','--bg');
+initSwatchGrid('fgGrid','--fg');
+initSwatchGrid('boxGrid','--box');
+
+/* ---------- Persist UI selections (optional localStorage) ---------- */
+(function restore(){
+  const saved = JSON.parse(localStorage.getItem('odo_prefs')||'{}');
+  if(saved.bg) document.documentElement.style.setProperty('--bg', saved.bg);
+  if(saved.fg) document.documentElement.style.setProperty('--fg', saved.fg);
+  if(saved.box){ document.documentElement.style.setProperty('--box', saved.box); }
+  if(saved.boxfg){ document.documentElement.style.setProperty('--box-fg', saved.boxfg); }
+  if(saved.font){ document.body.style.fontFamily = `'${saved.font}', sans-serif`; currentFont = saved.font; }
+})();
+window.addEventListener('beforeunload', ()=>{
+  const styles = getComputedStyle(document.documentElement);
+  localStorage.setItem('odo_prefs', JSON.stringify({
+    bg: styles.getPropertyValue('--bg').trim(),
+    fg: styles.getPropertyValue('--fg').trim(),
+    box: styles.getPropertyValue('--box').trim(),
+    boxfg: styles.getPropertyValue('--box-fg').trim(),
+    font: currentFont
+  }));
+});
+
+/* ---------- Accessibility: keyboard shortcuts ---------- */
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowUp'){ odo+=0.01; showOdo(); }
+  else if(e.key==='ArrowDown'){ odo=Math.max(0, odo-0.01); showOdo(); }
+});
+
+/* ---------- Initial paint ---------- */
+showOdo();
+</script>
+</body>
+</html>
